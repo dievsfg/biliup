@@ -18,9 +18,7 @@ ARG branch_name=main
 ENV TZ=Asia/Shanghai
 EXPOSE 19159/tcp
 VOLUME /opt
-# 将仓库根目录下的douyucdns.txt复制到/opt/data/douyucdns.txt @dievsfg
-RUN mkdir -p /opt/data
-COPY --from=biliup /biliup/douyucdns.txt /opt/data/douyucdns.txt
+
 
 RUN set -eux; \
 	\
@@ -97,6 +95,9 @@ RUN set -eux; \
 		/var/log/*
 
 COPY --from=webui /biliup/biliup/web/public/ /biliup/biliup/web/public/
+# 将仓库根目录下的douyucdns.txt复制到/opt/data/douyucdns.txt @dievsfg
+RUN mkdir -p /opt/data
+COPY --from=webui /biliup/douyucdns.txt /opt/data/douyucdns.txt
 WORKDIR /opt
 
 ENTRYPOINT ["biliup"]

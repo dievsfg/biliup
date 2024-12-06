@@ -98,6 +98,13 @@ class Douyu(DownloadBase):
 
         try:
             live_data = await self.get_play_info(self.__room_id, params)
+            try:
+                with open('output.txt', 'w') as file:
+                    file.write('是否以isp=结尾：' + str(live_data['rtmp_live'].endswith("isp=")) + '\n')
+                    file.write('P_Config.douyu_cdns的长度：' + str(len(P_Config.douyu_cdns)) + '\n')
+                    file.write('P_Config.douyu_cdns的值：' + str(P_Config.douyu_cdns) + '\n')
+            except Exception as e:
+                print(f'An error occurred: {e}')
             # 更改推流地址 使用自定义CDN  @dievsfg
             #self.raw_stream_url = f"{live_data['rtmp_url']}/{live_data['rtmp_live']}"
             if not live_data['rtmp_live'].endswith("isp=") or len(P_Config.douyu_cdns) == 0:
