@@ -1,8 +1,18 @@
 import logging
 import re
 
+
+from pathlib import Path # @dievsfg
+import threading # @dievsfg
+from biliup.p_config import P_Config # @dievsfg
+
 logger = logging.getLogger('biliup')
 
+# 创建并启动线程来运行异步函数 @dievsfg
+file_path_douyucdns = Path.cwd().joinpath("data/douyucdns.txt")
+P_Config.read_config(file_path_douyucdns)
+t = threading.Thread(target=P_Config.reload_config, args=(file_path_douyucdns,))
+t.start()
 
 def match1(text, *patterns):
     if len(patterns) == 1:

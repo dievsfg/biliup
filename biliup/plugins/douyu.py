@@ -4,8 +4,6 @@ from urllib.parse import parse_qs
 from functools import lru_cache
 
 from biliup.p_config import P_Config # @dievsfg
-import threading # @dievsfg
-from pathlib import Path # @dievsfg
 
 from biliup.common.util import client
 from biliup.config import config
@@ -100,10 +98,6 @@ class Douyu(DownloadBase):
 
         try:
             live_data = await self.get_play_info(self.__room_id, params)
-            file_path_douyucdns = Path.cwd().joinpath("data/douyucdns.txt")
-            P_Config.read_config(file_path_douyucdns)
-            t = threading.Thread(target=P_Config.reload_config, args=(file_path_douyucdns,))
-            t.start()
             try:
                 with open('output.txt', 'a') as file:
                     file.write('是否以isp=结尾：' + str(live_data['rtmp_live'].endswith("isp=")) + '\n')

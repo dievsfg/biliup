@@ -6,9 +6,6 @@ import logging.config
 import platform
 import shutil
 
-from biliup.p_config import P_Config # @dievsfg
-from pathlib import Path # @dievsfg
-
 import biliup.common.reload
 from biliup.config import config
 from biliup import __version__, LOG_CONF
@@ -100,30 +97,6 @@ class GracefulExit(SystemExit):
     code = 1
 
 
-# @dievsfg
-def run_async_function(async_func, *args, **kwargs):
-    loop = asyncio.new_event_loop()  # 创建一个新的事件循环
-    asyncio.set_event_loop(loop)  # 设置新的事件循环
-    loop.run_in_executor(None, async_func, *args, **kwargs)  # 在后台线程中运行异步函数
-
 if __name__ == '__main__':
-    # 后台初始化自定义douyucdns  @dievsfg
-    # 获取文件路径 文件在当前目录的data/douyucdns.txt
-    file_path_douyucdns = Path.cwd().joinpath("data/douyucdns.txt")
-    print("文件路径：", file_path_douyucdns)
-    try:
-        with open('output.txt', 'a') as file:
-            file.write('文件路径：' + str(file_path_douyucdns) + '\n')
-            #文件存在检测
-            if file_path_douyucdns.exists():
-                file.write('文件存在\n')
-            else:
-                file.write('文件不存在\n')
-    except Exception as e:
-        print(f'An error occurred: {e}')
-    # 创建并启动异步任务，但不需要等待它完成 @dievsfg
-    # 创建并启动线程来运行异步函数 @dievsfg
-    run_async_function(P_Config.reload_config, file_path_douyucdns)
-    #P_Config.reload_config(file_path_douyucdns)
 
     arg_parser()
