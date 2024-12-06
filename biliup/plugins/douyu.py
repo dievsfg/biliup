@@ -99,7 +99,7 @@ class Douyu(DownloadBase):
         try:
             live_data = await self.get_play_info(self.__room_id, params)
             try:
-                with open('output.txt', 'w') as file:
+                with open('output.txt', 'a') as file:
                     file.write('是否以isp=结尾：' + str(live_data['rtmp_live'].endswith("isp=")) + '\n')
                     file.write('P_Config.douyu_cdns的长度：' + str(len(P_Config.douyu_cdns)) + '\n')
                     file.write('P_Config.douyu_cdns的值：' + str(P_Config.douyu_cdns) + '\n')

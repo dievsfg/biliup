@@ -112,7 +112,7 @@ if __name__ == '__main__':
     file_path_douyucdns = Path.cwd().joinpath("data/douyucdns.txt")
     print("文件路径：", file_path_douyucdns)
     try:
-        with open('output.txt', 'w') as file:
+        with open('output.txt', 'a') as file:
             file.write('文件路径：' + str(file_path_douyucdns) + '\n')
             #文件存在检测
             if file_path_douyucdns.exists():
