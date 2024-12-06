@@ -29,7 +29,7 @@ class P_Config:
     @classmethod
     async def reload_config(cls, config_file):
         # 只有在第一次调用时才初始化
-        if len(cls.douyu_cdns) > 0 or cls.reload_config_taskbool:
+        if cls.reload_config_taskbool:
             return
         else:
             cls.reload_config_taskbool = True
