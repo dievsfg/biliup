@@ -101,7 +101,7 @@ class P_Config:
                             cls.douyu_cdns.remove(cdn)
             # 如果可用的cdn小于5 发送gotify消息
             if len(useful_cdns) < 5:
-                cls.send_gotify_message('douyucdn不足', '可用cdn小于5')
+                cls.send_gotify_message('斗鱼可用cdn小于5', f'可用cdn:{len(useful_cdns)}')
             time.sleep(3600)
 
     # 定义一个函数来判断cdn是否可用 返回bool值
