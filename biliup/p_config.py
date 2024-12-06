@@ -92,7 +92,7 @@ class P_Config:
                     useful_cdns.append(cdn)
                 else:
                     unuseful_cdns.append(cdn)
-            if len(useful_cdns) > 0:
+            if len(useful_cdns) > 0 and len(unuseful_cdns) > 0:
                 with cls.lock:
                     # 从douyu_cdns中删除不可用的cdn
                     for cdn in unuseful_cdns:
