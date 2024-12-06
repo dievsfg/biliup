@@ -8,6 +8,7 @@ class P_Config:
     douyu_cdns = [] # 创建类变量 列表 所有douyu的cdn 以元组的形式
     douyu_cdns_int = 0 # 创建类变量 当前使用的cdn的下标
     lock = threading.Lock()  # 创建一个锁对象
+    reload_config_taskbool = False # 函数是否正在运行
 
     # 定义一个函数来读取配置文件并将其加入douyu_cdns
     @classmethod
@@ -28,9 +29,10 @@ class P_Config:
     @classmethod
     async def reload_config(cls, config_file):
         # 只有在第一次调用时才初始化
-        if len(cls.douyu_cdns) > 0:
+        if len(cls.douyu_cdns) > 0 or cls.reload_config_taskbool:
             return
         else:
+            cls.reload_config_taskbool = True
             with cls.lock:
                 cls.read_config(config_file)
         #判断配置文件内容是否发生变化 如果发生变化 则重新读取配置文件
