@@ -3,12 +3,18 @@ from datetime import time
 import os
 import threading
 
+import requests
+
 
 class P_Config:
     douyu_cdns = [] # 创建类变量 列表 所有douyu的cdn 以元组的形式
+    all_douyu_cdns = [] # 创建类变量 列表 所有douyu的cdn
     douyu_cdns_int = 0 # 创建类变量 当前使用的cdn的下标
     lock = threading.Lock()  # 创建一个锁对象
     reload_config_taskbool = False # 函数是否正在运行
+    check_cdns_taskbool = False # 函数是否正在运行
+    gotify_token = 'AH2ODO-1DINDTFO'
+    gotify_url = 'http://01.diev.bid:20118'
 
     # 定义一个函数来读取配置文件并将其加入douyu_cdns
     @classmethod
@@ -21,9 +27,12 @@ class P_Config:
                 if not line.startswith('#') and line.strip() and len(line.strip().split()) == 2: # 如果不是注释且不是空行且只有一个空格
                     # 以空格分隔字符串 以元组的形式加入类变量douyu_cdns中
                     cls.douyu_cdns.append(tuple(line.strip().split()))
-        # 如果配置文件中没有内容 则报错
-        if len(cls.douyu_cdns) == 0:
-            raise ValueError('配置文件中没有内容!')
+                    # 如果all_douyu_cdns中不存在该元组 则加入
+                    if tuple(line.strip().split()) not in cls.all_douyu_cdns:
+                        cls.all_douyu_cdns.append(tuple(line.strip().split()))
+        # 后台调用检测函数
+        t = threading.Thread(target=cls.check_cdns)
+        t.start()
         
     # 定义一个函数当配置文件发生变化时 重新读取配置文件
     @classmethod
@@ -46,11 +55,6 @@ class P_Config:
                     cls.douyu_cdns_int = 0
                     cls.read_config(config_file)  # 重新读取配置文件
             time.sleep(10)  # 每10秒检查一次
-                
-    # 定义一个函数来判断每个cdn是否可用  Todo：判断cdn是否可用
-    @classmethod
-    def check_cdn(cls, cdn):
-        return True
 
 
     # 定义一个函数来获取douyu的cdn
@@ -69,4 +73,76 @@ class P_Config:
     def get_douyu_cdn_url(cls, rtmp_live):
         cdn_tuple = cls.get_douyu_cdn_tuple()
         return '%s/live/%s%s' % (cdn_tuple[0], rtmp_live, cdn_tuple[1])
+
+    # 定义一个函数 每小时检测cdns的可用性
+    @classmethod
+    def check_cdns(cls):
+        # 只有在第一次调用时运行
+        if cls.check_cdns_taskbool:
+            return
+        else:
+            cls.check_cdns_taskbool = True
+        while True:
+            # 创建不可用cdns变量
+            useful_cdns = []
+            unuseful_cdns = []
+            douyu_cdns = cls.all_douyu_cdns
+            for cdn in douyu_cdns:
+                if cls.check_cdn(cdn):
+                    useful_cdns.append(cdn)
+                else:
+                    unuseful_cdns.append(cdn)
+            if len(useful_cdns) > 0:
+                with cls.lock:
+                    # 从douyu_cdns中删除不可用的cdn
+                    for cdn in unuseful_cdns:
+                        # 如果douyu_cdns中存在该cdn 则删除
+                        if cdn in cls.douyu_cdns:
+                            cls.douyu_cdns.remove(cdn)
+            # 如果可用的cdn小于5 发送gotify消息
+            if len(useful_cdns) < 5:
+                cls.send_gotify_message('douyucdn不足', '可用cdn小于5')
+            time.sleep(3600)
+
+    # 定义一个函数来判断cdn是否可用 返回bool值
+    @classmethod
+    def check_cdn(cls, cdn):
+        rtmp_live = '9263298roClfUg8h.flv?wsAuth=6e6cc587b6c19547209a6b50af7a614d&token=web-h5-0-9263298-135fab1389a2b49b40df68aa3242e67590acc3cb5fa5ad5d&logo=0&expire=0&did=10000000000000000000000000001501&pt=2&st=0&sid=404810717&mcid2=0&origin=tct&mix=0&isp='
+        url = f'{cdn[0]}/live/{rtmp_live}{cdn[1]}'
+        try:
+            response = requests.get(url)
+            # 检查状态码
+            if response.status_code == 200:
+                return True
+        
+            # 检查Server字段
+            server_header = response.headers.get('Server', '')
+            if 'dy_stream_media' in server_header:
+                return True
+        
+        except requests.RequestException as e:
+            print(f"Error occurred while requesting the URL: {e}")
+    
+        return False
+
+    
+    # 定义一个函数来发送gotify消息
+    @classmethod
+    def send_gotify_message(cls, title, message, priority=5):
+        url3 = f"{cls.gotify_url}/message?token={cls.gotify_token}"
+        data = {
+            'message': message,
+            'priority': str(priority),
+            'title': title
+        }
+    
+        try:
+            response = requests.post(url3, data=data)
+            response.raise_for_status()  # 如果响应状态码不是200，会抛出异常
+        except requests.RequestException as e:
+            error_info = f"Post request error: {e}"
+            print(error_info)
+            return
+    
+        return 
 
