@@ -68,5 +68,5 @@ class P_Config:
     @classmethod
     def get_douyu_cdn_url(cls, rtmp_live):
         cdn_tuple = cls.get_douyu_cdn_tuple()
-        return '%s/%s%s' % (cdn_tuple[0], rtmp_live, cdn_tuple[1])
+        return '%s/live/%s%s' % (cdn_tuple[0], rtmp_live, cdn_tuple[1])
 
