@@ -1,6 +1,7 @@
 # Build biliup's web-ui
 FROM node:lts as webui
-ARG repo_url=https://github.com/biliup/biliup
+# 改成自己的仓库 @dievsfg
+ARG repo_url=https://github.com/dievsfg/biliup
 ARG branch_name=master
 RUN set -eux; \
 	git clone --depth 1 --branch "$branch_name" "$repo_url"; \
@@ -10,7 +11,8 @@ RUN set -eux; \
 
 # Deploy Biliup
 FROM python:3.12-slim as biliup
-ARG repo_url=https://github.com/biliup/biliup
+# 改成自己的仓库 @dievsfg
+ARG repo_url=https://github.com/dievsfg/biliup
 ARG branch_name=master
 ENV TZ=Asia/Shanghai
 EXPOSE 19159/tcp
@@ -91,6 +93,8 @@ RUN set -eux; \
 		/var/log/*
 
 COPY --from=webui /biliup/biliup/web/public/ /biliup/biliup/web/public/
+# 将配置文件data/douyucdns.txt复制到/opt/data/douyucdns.txt @dievsfg
+COPY --from=webui /biliup/douyucdns.txt /opt/data/douyucdns.txt
 WORKDIR /opt
 
 ENTRYPOINT ["biliup"]

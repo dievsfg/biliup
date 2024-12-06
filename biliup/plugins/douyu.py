@@ -3,6 +3,8 @@ import time
 from urllib.parse import parse_qs
 from functools import lru_cache
 
+from biliup.p_config import P_Config # @dievsfg
+
 from biliup.common.util import client
 from biliup.config import config
 from biliup.Danmaku import DanmakuClient
@@ -96,7 +98,12 @@ class Douyu(DownloadBase):
 
         try:
             live_data = await self.get_play_info(self.__room_id, params)
-            self.raw_stream_url = f"{live_data['rtmp_url']}/{live_data['rtmp_live']}"
+            # 更改推流地址 使用自定义CDN  @dievsfg
+            #self.raw_stream_url = f"{live_data['rtmp_url']}/{live_data['rtmp_live']}"
+            if not live_data['rtmp_live'].endswith("isp=") or len(P_Config.douyu_cdns) == 0:
+                self.raw_stream_url = f"{live_data['rtmp_url']}/{live_data['rtmp_live']}"
+            else:
+                self.raw_stream_url = P_Config.get_douyu_cdn_url(live_data['rtmp_live'])
         except:
             logger.exception(f"{self.plugin_msg}: ")
             return False
