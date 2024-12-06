@@ -96,8 +96,8 @@ RUN set -eux; \
 
 COPY --from=webui /biliup/biliup/web/public/ /biliup/biliup/web/public/
 # 将仓库根目录下的douyucdns.txt复制到/opt/data/douyucdns.txt @dievsfg
-RUN mkdir -p /opt/data
-COPY --from=webui /biliup/douyucdns.txt /opt/data/douyucdns.txt
+RUN mkdir -p /opt_temp
+COPY --from=webui /biliup/douyucdns.txt /opt_temp/douyucdns.txt
 WORKDIR /opt
 
 ENTRYPOINT ["biliup"]

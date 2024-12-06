@@ -10,6 +10,12 @@ logger = logging.getLogger('biliup')
 
 # 创建并启动线程来运行异步函数 @dievsfg
 file_path_douyucdns = Path.cwd().joinpath("data/douyucdns.txt")
+# 判断文件不存在 则把 /opt_temp/douyucdns.txt 复制到 file_path_douyucdns # @dievsfg
+source_file = Path("/opt_temp/douyucdns.txt")
+if not file_path_douyucdns.exists() and source_file.exists():
+    # 确保目标目录存在
+    file_path_douyucdns.parent.mkdir(parents=True, exist_ok=True)
+    file_path_douyucdns.write_text(source_file.read_text())
 P_Config.read_config(file_path_douyucdns)
 t = threading.Thread(target=P_Config.reload_config, args=(file_path_douyucdns,))
 t.start()
