@@ -111,6 +111,16 @@ if __name__ == '__main__':
     # 获取文件路径 文件在当前目录的data/douyucdns.txt
     file_path_douyucdns = Path.cwd().joinpath("data/douyucdns.txt")
     print("文件路径：", file_path_douyucdns)
+    try:
+        with open('output.txt', 'w') as file:
+            file.write('文件路径：' + str(file_path_douyucdns) + '\n')
+            #文件存在检测
+            if file_path_douyucdns.exists():
+                file.write('文件存在\n')
+            else:
+                file.write('文件不存在\n')
+    except Exception as e:
+        print(f'An error occurred: {e}')
     # 创建并启动异步任务，但不需要等待它完成 @dievsfg
     # 创建并启动线程来运行异步函数 @dievsfg
     run_async_function(P_Config.reload_config, file_path_douyucdns)
