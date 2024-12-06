@@ -6,6 +6,7 @@ ARG branch_name=main
 RUN set -eux; \
 	git clone --depth 1 --branch "$branch_name" "$repo_url"; \
 	cd biliup; \
+	ls -l /; \
 	npm install; \
 	npm run build
 
