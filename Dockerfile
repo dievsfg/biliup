@@ -81,6 +81,8 @@ RUN set -eux; \
 	cd biliup && \
 	pip3 install --no-cache-dir quickjs && \
 	pip3 install -e . && \
+	# 更改urllib3版本 @dievsfg
+	pip3 install urllib3==1.26.5 && \
 	\
 	# Clean up \
 	apt-mark auto '.*' > /dev/null; \
