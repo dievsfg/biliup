@@ -172,29 +172,29 @@ class P_Config:
         rtmp_live = '11156919rPcQDHpa.flv?wsAuth=7d58a797c57b62a13f74f517bbd72a4e&token=web-h5-85634402-11156919-7d8387b3fa5b87e87a14876a599d2a0435d5ed099b72b9a1&logo=0&expire=0&did=321da918cec5034b1c9246fa00051701&ver=Douyu_224120605&pt=2&st=3&sid=404748496&mcid2=0&origin=tct&mix=0&isp='
         url = f'{cdn[0]}/live/{rtmp_live}{cdn[1]}'
         #print('\n'+url[:50])
-        cls.write_logs(f'检查cdn:{url[:50]}')
+        #cls.write_logs(f'检查cdn:{url[:50]}')
         try:
             response = requests.get(url, stream=True, timeout=1)
             # 检查状态码
             if response.status_code == 200:
                 #print("cdn可用1")
-                cls.write_logs('cdn可用1')
+                #cls.write_logs('cdn可用1')
                 return True
         
             # 检查Server字段
             server_header = response.headers.get('Server', '')
             if 'dy_stream_media' in server_header:
                 #print("cdn可用2")
-                cls.write_logs('cdn可用2')
+                #cls.write_logs('cdn可用2')
                 return True
         
         except requests.exceptions.Timeout:
             #print("请求超时，CDN可用3")
-            cls.write_logs('请求超时，CDN可用3')
+            #cls.write_logs('请求超时，CDN可用3')
             return True
         except requests.exceptions.RequestException as e:
             print(f"发生错误: {e}")
-            cls.write_logs(f'发生错误: {e}')
+            #cls.write_logs(f'发生错误: {e}')
     
         return False
 
