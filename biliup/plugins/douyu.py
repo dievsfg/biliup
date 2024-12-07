@@ -104,6 +104,8 @@ class Douyu(DownloadBase):
                 self.raw_stream_url = f"{live_data['rtmp_url']}/{live_data['rtmp_live']}"
             else:
                 self.raw_stream_url = P_Config.get_douyu_cdn_url(live_data['rtmp_live'])
+                if not self.raw_stream_url:
+                    self.raw_stream_url = f"{live_data['rtmp_url']}/{live_data['rtmp_live']}"
         except:
             logger.exception(f"{self.plugin_msg}: ")
             return False

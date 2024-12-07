@@ -1,5 +1,5 @@
 # @dievsfg  
-from datetime import time
+import time
 import os
 import threading
 
@@ -36,7 +36,7 @@ class P_Config:
         
     # 定义一个函数当配置文件发生变化时 重新读取配置文件
     @classmethod
-    async def reload_config(cls, config_file):
+    def reload_config(cls, config_file):
         # 只有在第一次调用时才初始化
         if cls.reload_config_taskbool:
             return
@@ -61,6 +61,9 @@ class P_Config:
     @classmethod
     def get_douyu_cdn_tuple(cls):
         with cls.lock:  # 使用上下文管理器自动获取锁
+            # cls.douyu_cdns的长度为0 则返回空元组
+            if len(cls.douyu_cdns) == 0:
+                return ()
             # 如果douyu_cdns_int超出范围 则重置为0
             if cls.douyu_cdns_int >= len(cls.douyu_cdns):
                 cls.douyu_cdns_int = 1
@@ -72,7 +75,33 @@ class P_Config:
     @classmethod
     def get_douyu_cdn_url(cls, rtmp_live):
         cdn_tuple = cls.get_douyu_cdn_tuple()
-        return '%s/live/%s%s' % (cdn_tuple[0], rtmp_live, cdn_tuple[1])
+        if len(cdn_tuple) == 0:
+            cls.send_gotify_message('斗鱼没有可用cdn', '可用cdn:0')
+            return ""
+        url = f'{cdn_tuple[0]}/live/{rtmp_live}{cdn_tuple[1]}'
+        if cls.check_cdn_tuple(url):
+            return url
+        else:
+            #在douyu_cdns删除不可用的cdn
+            if cdn_tuple in cls.douyu_cdns:
+                cls.douyu_cdns.remove(cdn_tuple)
+                cls.douyu_cdns_int -= 1
+            return cls.get_douyu_cdn_url(rtmp_live)
+
+        # 定义一个函数来判断cdn是否可用 返回bool值
+    @classmethod
+    def check_cdn_tuple(cls, url):
+        try:
+            response = requests.get(url, stream=True, timeout=2)
+            # 检查状态码
+            if response.status_code == 200:
+                #print("cdn可用1")
+                return True
+
+        except requests.RequestException as e:
+            print(f"Error occurred while requesting the URL: {e}")
+    
+        return False
 
     # 定义一个函数 每小时检测cdns的可用性
     @classmethod
@@ -99,6 +128,11 @@ class P_Config:
                         # 如果douyu_cdns中存在该cdn 则删除
                         if cdn in cls.douyu_cdns:
                             cls.douyu_cdns.remove(cdn)
+                    # 从douyu_cdns中加入可用的cdn
+                    for cdn in useful_cdns:
+                        # 如果douyu_cdns中不存在该cdn 则加入
+                        if cdn not in cls.douyu_cdns:
+                            cls.douyu_cdns.append(cdn)
             # 如果可用的cdn小于5 发送gotify消息
             if len(useful_cdns) < 5:
                 cls.send_gotify_message('斗鱼可用cdn小于5', f'可用cdn:{len(useful_cdns)}\n{useful_cdns}')
@@ -107,21 +141,27 @@ class P_Config:
     # 定义一个函数来判断cdn是否可用 返回bool值
     @classmethod
     def check_cdn(cls, cdn):
-        rtmp_live = '9263298roClfUg8h.flv?wsAuth=6e6cc587b6c19547209a6b50af7a614d&token=web-h5-0-9263298-135fab1389a2b49b40df68aa3242e67590acc3cb5fa5ad5d&logo=0&expire=0&did=10000000000000000000000000001501&pt=2&st=0&sid=404810717&mcid2=0&origin=tct&mix=0&isp='
+        rtmp_live = '11156919rPcQDHpa.flv?wsAuth=7d58a797c57b62a13f74f517bbd72a4e&token=web-h5-85634402-11156919-7d8387b3fa5b87e87a14876a599d2a0435d5ed099b72b9a1&logo=0&expire=0&did=321da918cec5034b1c9246fa00051701&ver=Douyu_224120605&pt=2&st=3&sid=404748496&mcid2=0&origin=tct&mix=0&isp='
         url = f'{cdn[0]}/live/{rtmp_live}{cdn[1]}'
+        print('\n'+url[:50])
         try:
-            response = requests.get(url)
+            response = requests.get(url, stream=True, timeout=1)
             # 检查状态码
             if response.status_code == 200:
+                print("cdn可用1")
                 return True
         
             # 检查Server字段
             server_header = response.headers.get('Server', '')
             if 'dy_stream_media' in server_header:
+                print("cdn可用2")
                 return True
         
-        except requests.RequestException as e:
-            print(f"Error occurred while requesting the URL: {e}")
+        except requests.exceptions.Timeout:
+            print("请求超时，CDN可用3")
+            return True
+        except requests.exceptions.RequestException as e:
+            print(f"发生错误: {e}")
     
         return False
 
@@ -145,4 +185,8 @@ class P_Config:
             return
     
         return 
+
+
+P_Config.reload_config("./douyucdns.txt")
+
 
