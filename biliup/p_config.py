@@ -71,8 +71,9 @@ class P_Config:
         else:
             cls.write_douyu_cdns_taskbool = True
         while True:
+            douyu_cdns = cls.douyu_cdns
             with open(cls.file_path_currentcdns, 'w', encoding='utf-8') as file:
-                for cdn in cls.douyu_cdns:
+                for cdn in douyu_cdns:
                     file.write(f"{cdn[0]} {cdn[1]}\n")
             time.sleep(60)
 
