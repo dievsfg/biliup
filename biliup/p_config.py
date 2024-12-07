@@ -148,17 +148,17 @@ class P_Config:
             response = requests.get(url, stream=True, timeout=1)
             # 检查状态码
             if response.status_code == 200:
-                print("cdn可用1")
+                #print("cdn可用1")
                 return True
         
             # 检查Server字段
             server_header = response.headers.get('Server', '')
             if 'dy_stream_media' in server_header:
-                print("cdn可用2")
+                #print("cdn可用2")
                 return True
         
         except requests.exceptions.Timeout:
-            print("请求超时，CDN可用3")
+            #print("请求超时，CDN可用3")
             return True
         except requests.exceptions.RequestException as e:
             print(f"发生错误: {e}")
@@ -187,6 +187,6 @@ class P_Config:
         return 
 
 
-P_Config.reload_config("./douyucdns.txt")
+#P_Config.reload_config("./douyucdns.txt")
 
 
