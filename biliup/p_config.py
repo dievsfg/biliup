@@ -1,4 +1,5 @@
 # @dievsfg  
+from pathlib import Path
 import time
 import os
 import threading
@@ -15,6 +16,8 @@ class P_Config:
     check_cdns_taskbool = False # 函数是否正在运行
     gotify_token = 'AH2ODO-1DINDTFO'
     gotify_url = 'http://01.diev.bid:20118'
+    write_douyu_cdns_taskbool = False # 函数是否正在运行
+    file_path_currentcdns = Path.cwd().joinpath("data/douyuucurrentcdns.txt") # 当前cdns
 
     # 定义一个函数来读取配置文件并将其加入douyu_cdns
     @classmethod
@@ -32,7 +35,9 @@ class P_Config:
                         cls.all_douyu_cdns.append(tuple(line.strip().split()))
         # 后台调用检测函数
         t = threading.Thread(target=cls.check_cdns)
+        t2 = threading.Thread(target=cls.write_douyu_cdns)
         t.start()
+        t2.start()
         
     # 定义一个函数当配置文件发生变化时 重新读取配置文件
     @classmethod
@@ -56,6 +61,20 @@ class P_Config:
                     cls.read_config(config_file)  # 重新读取配置文件
             time.sleep(10)  # 每10秒检查一次
 
+
+    # 定义一个函数将douyu_cdns写入文件
+    @classmethod
+    def write_douyu_cdns(cls):
+        # 只有在第一次调用时才初始化
+        if cls.write_douyu_cdns_taskbool:
+            return
+        else:
+            cls.write_douyu_cdns_taskbool = True
+        while True:
+            with open(cls.file_path_currentcdns, 'w', encoding='utf-8') as file:
+                for cdn in cls.douyu_cdns:
+                    file.write(f"{cdn[0]} {cdn[1]}\n")
+            time.sleep(60)
 
     # 定义一个函数来获取douyu的cdn
     @classmethod
@@ -111,6 +130,7 @@ class P_Config:
             return
         else:
             cls.check_cdns_taskbool = True
+        time.sleep(5)
         while True:
             # 创建不可用cdns变量
             useful_cdns = []
