@@ -81,6 +81,19 @@ class P_Config:
     # 定义一个函数 输入字符串 写入日志文件
     @classmethod
     def write_logs(cls, logs):
+        # 读取现有日志
+        if os.path.exists(cls.file_path_logs):
+            with open(cls.file_path_logs, 'r', encoding='utf-8') as file:
+                lines = file.readlines()
+
+            # 如果文件行数超过1000，删除前500行
+            if len(lines) > 1000:
+                lines = lines[500:]  # 保留后500行
+
+            # 重新写入文件
+            with open(cls.file_path_logs, 'w', encoding='utf-8') as file:
+                file.writelines(lines)
+        # 写入新日志        
         with open(cls.file_path_logs, 'a', encoding='utf-8') as file:
             file.write(f"{logs}\n")
 
@@ -129,6 +142,7 @@ class P_Config:
 
         except requests.RequestException as e:
             print(f"Error occurred while requesting the URL: {e}")
+            cls.write_logs(f'cdn:{url[:50]}  不可用 \n {e}')
     
         return False
 
@@ -197,6 +211,7 @@ class P_Config:
         except requests.exceptions.RequestException as e:
             print(f"发生错误: {e}")
             #cls.write_logs(f'发生错误: {e}')
+            cls.write_logs(f'cdn:{url[:50]}  发生错误 \n {e}')
     
         return False
 
