@@ -90,6 +90,8 @@ class P_Config:
         with cls.lock:  # 使用上下文管理器自动获取锁
             # cls.douyu_cdns的长度为0 则返回空元组
             if len(cls.douyu_cdns) == 0:
+                with cls.lock:
+                    cls.douyu_cdns = cls.all_douyu_cdns
                 return ()
             # 如果douyu_cdns_int超出范围 则重置为0
             if cls.douyu_cdns_int >= len(cls.douyu_cdns):
