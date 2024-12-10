@@ -149,7 +149,8 @@ class DownloadBase(ABC):
             # 避免适配两套
             output_args += ['-segment_time', '9999:00:00']
 
-        output_args += ['-c', 'copy']
+        # 音频重新编码 @dievsfg
+        output_args += ['-c:v', 'copy', '-c:a', 'aac']
         output_args += self.opt_args
         file_name = self.gen_download_filename(is_fmt=True)
         args = ['ffmpeg', *input_args, *output_args, f'{file_name}_%d.{self.suffix}']
@@ -220,7 +221,8 @@ class DownloadBase(ABC):
             else:
                 output_args += ['-f', self.suffix]
 
-            args = ['ffmpeg', '-y', *input_args, *output_args, '-c', 'copy',
+            # 音频重新编码 @dievsfg
+            args = ['ffmpeg', '-y', *input_args, *output_args, '-c:v', 'copy', '-c:a', 'aac',
                     f'{fmt_file_name}.{self.suffix}.part']
             with subprocess.Popen(args, stdin=subprocess.DEVNULL if not streamlink_proc else streamlink_proc.stdout,
                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as proc:
