@@ -122,9 +122,9 @@ class DownloadBase(ABC):
     def ffmpeg_segment_download(self):
         # TODO 无日志
         # , '-report'
-        # ffmpeg 输入参数 # 添加输入超时参数(1秒) @dievsfg
+        # ffmpeg 输入参数 # 添加输入超时参数(1秒)和其他参数(-loglevel之前都是)  @dievsfg
         input_args = [
-            '-timeout', '1000000','-loglevel', 'quiet', '-y'
+            '-xerror', '-skip_frame:v', 'nokey', '-flags:v', '+drop_changed', '-timeout', '1000000','-loglevel', 'quiet', '-y'
         ]
         # ffmpeg 输出参数
         output_args = [
@@ -175,9 +175,9 @@ class DownloadBase(ABC):
         try:
             # 文件名不含后戳
             fmt_file_name = self.gen_download_filename(is_fmt=True)
-            # ffmpeg 输入参数  # 添加输入超时参数(1秒) @dievsfg
+            # ffmpeg 输入参数  # 添加输入超时参数(1秒)和其他参数(全是新加的) @dievsfg
             input_args = [
-                '-timeout', '1000000'
+                '-xerror', '-skip_frame:v', 'nokey', '-flags:v', '+drop_changed', '-timeout', '1000000'
             ]
             # ffmpeg 输出参数
             output_args = []
