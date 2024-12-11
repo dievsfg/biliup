@@ -101,8 +101,8 @@ class P_Config:
     @classmethod
     def get_douyu_cdn_tuple(cls):
         with cls.lock:  # 使用上下文管理器自动获取锁
-            # cls.douyu_cdns的长度为0 则返回空元组
-            if len(cls.douyu_cdns) == 0:
+            # cls.douyu_cdns的长度小于5 则返回空元组
+            if len(cls.douyu_cdns) < 5:
                 with cls.lock:
                     cls.douyu_cdns = cls.all_douyu_cdns
                 return ()
