@@ -86,9 +86,9 @@ class P_Config:
             with open(cls.file_path_logs, 'r', encoding='utf-8') as file:
                 lines = file.readlines()
 
-            # 如果文件行数超过1000，删除前500行
-            if len(lines) > 1000:
-                lines = lines[500:]  # 保留后500行
+            # 如果文件行数超过2000，删除前1000行
+            if len(lines) > 2000:
+                lines = lines[1000:]  # 保留后1000行
 
             # 重新写入文件
             with open(cls.file_path_logs, 'w', encoding='utf-8') as file:

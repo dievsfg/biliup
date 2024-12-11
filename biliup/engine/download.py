@@ -24,6 +24,9 @@ from PIL import Image
 from biliup.config import config
 from biliup.Danmaku import IDanmakuClient
 
+import io # @dievsfg
+from biliup.p_config import P_Config # @dievsfg
+
 logger = logging.getLogger('biliup')
 
 
@@ -122,9 +125,9 @@ class DownloadBase(ABC):
     def ffmpeg_segment_download(self):
         # TODO 无日志
         # , '-report'
-        # ffmpeg 输入参数 # 添加输入超时参数(1秒)和其他参数(-loglevel之前都是)  @dievsfg
+        # ffmpeg 输入参数 # 添加输入超时参数(2秒)和其他参数(-loglevel之前都是)  @dievsfg
         input_args = [
-            '-xerror', '-skip_frame:v', 'nokey', '-flags:v', '+drop_changed', '-timeout', '1000000','-loglevel', 'quiet', '-y'
+            '-xerror', '-skip_frame:v', 'nokey', '-flags:v', '+drop_changed', '-timeout', '2000000','-loglevel', 'quiet', '-y'
         ]
         # ffmpeg 输出参数
         output_args = [
@@ -154,6 +157,8 @@ class DownloadBase(ABC):
         output_args += self.opt_args
         file_name = self.gen_download_filename(is_fmt=True)
         args = ['ffmpeg', *input_args, *output_args, f'{file_name}_%d.{self.suffix}']
+        # 创建一个StringIO对象来捕获错误信息 @@dievsfg
+        error_output = io.StringIO()
         with subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                               stderr=subprocess.DEVNULL) as proc:
             for line in iter(proc.stdout.readline, b''):  # b'\n'-separated lines
@@ -167,6 +172,11 @@ class DownloadBase(ABC):
                 except:
                     logger.error(f'分段事件失败：{self.__class__.__name__} - {self.fname}', exc_info=True)
 
+        # 捕获错误输出 @dievsfg
+        stderr_output = proc.stderr.read().decode(errors='ignore')
+        error_output.write(stderr_output)
+        # 在返回之前将错误信息写入到文件 @dievsfg
+        P_Config.write_logs(error_output.getvalue())
         return proc.returncode == 0
 
     def ffmpeg_download(self, use_streamlink=False):
@@ -176,9 +186,9 @@ class DownloadBase(ABC):
         try:
             # 文件名不含后戳
             fmt_file_name = self.gen_download_filename(is_fmt=True)
-            # ffmpeg 输入参数  # 添加输入超时参数(1秒)和其他参数(全是新加的) @dievsfg
+            # ffmpeg 输入参数  # 添加输入超时参数(2秒)和其他参数(全是新加的) @dievsfg
             input_args = [
-                '-xerror', '-skip_frame:v', 'nokey', '-flags:v', '+drop_changed', '-timeout', '1000000'
+                '-xerror', '-skip_frame:v', 'nokey', '-flags:v', '+drop_changed', '-timeout', '2000000'
             ]
             # ffmpeg 输出参数
             output_args = []
@@ -224,6 +234,7 @@ class DownloadBase(ABC):
             # 音频重新编码 @dievsfg
             args = ['ffmpeg', '-y', *input_args, *output_args, '-c:v', 'copy', '-c:a', 'aac',
                     f'{fmt_file_name}.{self.suffix}.part']
+            error_output = io.StringIO()
             with subprocess.Popen(args, stdin=subprocess.DEVNULL if not streamlink_proc else streamlink_proc.stdout,
                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as proc:
                 # with SessionLocal() as db:
@@ -234,6 +245,11 @@ class DownloadBase(ABC):
                     print(decode_line)
                     logger.debug(decode_line)
 
+            # 捕获错误输出 @dievsfg
+            stderr_output = proc.stderr.read().decode(errors='ignore')
+            error_output.write(stderr_output)
+            # 在返回之前将错误信息写入到文件 @dievsfg
+            P_Config.write_logs(error_output.getvalue())
             if proc.returncode == 0:
                 # 文件重命名
                 self.download_file_rename(f'{fmt_file_name}.{self.suffix}.part', f'{fmt_file_name}.{self.suffix}')
