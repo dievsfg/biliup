@@ -99,12 +99,12 @@ class P_Config:
 
     # 定义一个函数来获取douyu的cdn
     @classmethod
-    def get_douyu_cdn_tuple(cls):
+    def get_douyu_cdn_tuple(cls, intnum=1):
         with cls.lock:  # 使用上下文管理器自动获取锁
             # cls.douyu_cdns的长度小于5 则返回空元组
-            if len(cls.douyu_cdns) < 5:
-                with cls.lock:
-                    cls.douyu_cdns = cls.all_douyu_cdns
+            if len(cls.douyu_cdns) < intnum:
+                #with cls.lock:
+                    #cls.douyu_cdns = cls.all_douyu_cdns
                 return ()
             # 如果douyu_cdns_int超出范围 则重置为0
             if cls.douyu_cdns_int >= len(cls.douyu_cdns):
@@ -115,8 +115,8 @@ class P_Config:
 
     # 定义一个函数来获取douyu的cdn的url 传入url中间值 返回完整的url
     @classmethod
-    def get_douyu_cdn_url(cls, rtmp_live):
-        cdn_tuple = cls.get_douyu_cdn_tuple()
+    def get_douyu_cdn_url(cls, rtmp_live, intnum=1):
+        cdn_tuple = cls.get_douyu_cdn_tuple(intnum)
         if len(cdn_tuple) == 0:
             cls.send_gotify_message('斗鱼没有可用cdn', '可用cdn:0')
             return ""
@@ -125,12 +125,12 @@ class P_Config:
             return url
         else:
             #在douyu_cdns删除不可用的cdn
-            if cdn_tuple in cls.douyu_cdns:
-                cls.douyu_cdns.remove(cdn_tuple)
-                cls.douyu_cdns_int -= 1
-            return cls.get_douyu_cdn_url(rtmp_live)
+            #if cdn_tuple in cls.douyu_cdns:
+                #cls.douyu_cdns.remove(cdn_tuple)
+                #cls.douyu_cdns_int -= 1
+            return cls.get_douyu_cdn_url(rtmp_live, intnum + 1)
 
-        # 定义一个函数来判断cdn是否可用 返回bool值
+    # 定义一个函数来判断cdn是否可用 返回bool值
     @classmethod
     def check_cdn_tuple(cls, url):
         try:

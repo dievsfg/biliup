@@ -96,6 +96,8 @@ class Douyu(DownloadBase):
         params['cdn'] = config.get('douyu_cdn', params['cdn'])
         params['rate'] = config.get('douyu_rate', 0)
 
+        P_Config.write_logs(f"{self.plugin_msg}: {params}")
+
         try:
             live_data = await self.get_play_info(self.__room_id, params)
             # 更改推流地址 使用自定义CDN  @dievsfg
